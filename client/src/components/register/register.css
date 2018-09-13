@@ -1,0 +1,38 @@
+div.register {
+  position: absolute;
+  background-color: #515E91;
+  border-radius: 5px;
+  margin-left: 28em;
+  margin-top: 10em;
+  width: 30em;
+  height: 30em;
+}
+
+div.login {
+  height: 20em;
+}
+
+.register-title {
+  text-align: center;
+  margin-top: 2em;
+  color: #07113A;
+}
+
+.register-form {
+  text-align: center;
+  display: inline-grid;
+  width: 100%;
+  margin-top: 2em;
+}
+
+.register-form input {
+  background-color: #7B85AD;
+}
+
+.register-form label {
+  color: #172457 !important;
+}
+
+.register-form button {
+  margin-top: .5em;
+}
