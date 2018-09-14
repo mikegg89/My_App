@@ -9,58 +9,69 @@ const passport = require('passport');
 
 // load input validation
 const validateRegisterInput = require('../../validation/register');
+const validateLoginInput = require('../../validation/login');
 
 // @route   POST api/users/register
 // @desc    Register users
 // @access  Public
 router.post('/register', (req, res) => {
-  if (req.body === null) {
-    let err;
-    res.status(err.status || 500);
-    res.render('error');
-  } else {
-    let User = [];
-    const Avatar = gravatar.url(req.body[0][4], {
-      s: '200', // Size
-      r: 'pg', // Rating
-      d: 'mm' // Default
-    });
-    const INSERT_NEW_USER = 'INSERT INTO user (first_name, last_name, user_name, password, email, avatar) VALUES ?';
+  let requestBody = {};
+  requestBody.first_name = req.body[0][0];
+  requestBody.last_name = req.body[0][1];
+  requestBody.user_name = req.body[0][2];
+  requestBody.password = req.body[0][3];
+  requestBody.email = req.body[0][4];
+  requestBody.password2 = req.body[0][5];
 
-    bcrypt.genSalt(10, (err, salt) => {
-      bcrypt.hash(req.body[0][3], salt, (err, hash) => {
-        if(err) throw err;
-        User.push([
-          req.body[0][0],
-          req.body[0][1],
-          req.body[0][2],
-          hash,
-          req.body[0][4],
-          Avatar
-        ]);
-      })
-    })
+  const { errors, isValid } = validateRegisterInput(requestBody);
 
-    let connection = null;
-    mysql
-      .createConnection(keys.mysql)
-      .then(
-        (conn) => {
-          connection = conn;
-          const result = connection.query(INSERT_NEW_USER, [User]);
-          connection.end();
-          return result;
-        },
-        err => connection.end().then(() => {
-          throw err;
-        }),
-      )
-      .catch((error) => {
-        console.error(error);
-      });
-
-    res.send(req.body);
+  // Check Validation
+  if (!isValid) {
+    return res.status(400).json(errors);
   }
+
+  let User = [];
+  const Avatar = gravatar.url(req.body[0][4], {
+    s: '200', // Size
+    r: 'pg', // Rating
+    d: 'mm' // Default
+  });
+  const INSERT_NEW_USER = 'INSERT INTO user (first_name, last_name, user_name, password, email, avatar) VALUES ?';
+
+  bcrypt.genSalt(10, (err, salt) => {
+    bcrypt.hash(req.body[0][3], salt, (err, hash) => {
+      if(err) throw err;
+      User.push([
+        req.body[0][0],
+        req.body[0][1],
+        req.body[0][2],
+        hash,
+        req.body[0][4],
+        Avatar
+      ]);
+    })
+  })
+
+  let connection = null;
+  mysql
+    .createConnection(keys.mysql)
+    .then(
+      (conn) => {
+        connection = conn;
+        const result = connection.query(INSERT_NEW_USER, [User]);
+        connection.end();
+        return result;
+      }
+    )
+    .then(sent => {
+      if(sent) {
+        return res.status(200).json({new_user: 'new user was added'});
+      }
+    })
+    .catch((err) => {
+      errors.user_name = "user name is taken";
+      return res.status(401).json(errors);
+    })
 });
 
 
@@ -68,10 +79,17 @@ router.post('/register', (req, res) => {
 // @desc    login user
 // @access  Public
 router.post('/login', (req, res) => {
-  if (req.body === null) {
-    let err;
-    res.status(err.status || 500);
-    res.render('error');
+  const { errors, isValid } = validateRegisterInput(req.body);
+
+  // Check Validation
+  if (!isValid) {
+    return res.status(400).json(errors);
+  }
+
+  let err = {};
+  if (!req.body[0][0]) {
+    err.empty = 'cannot send empty fields';
+    return res.status(401).json(err.empty).res.send(err.empty);
   } else {
     let userName = req.body[0][0];
     let password = req.body[0][1];
@@ -85,10 +103,7 @@ router.post('/login', (req, res) => {
           const result = connection.query(CHECK_USER);
           connection.end();
           return result;
-        },
-        err => connection.end().then(() => {
-          throw err;
-        }),
+        }
       )
       .then(count => {
         let confermation = JSON.parse(JSON.stringify(count));
@@ -111,8 +126,6 @@ router.post('/login', (req, res) => {
                 user_name: user.user_name,
                 avatar: user.avatar
               } // creat jwt payload
-
-              console.log(payload)
 
               // sign token
               jwt.sign(

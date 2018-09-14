@@ -8,10 +8,10 @@ const passport = require('passport');
 // @desc    get current users profile
 // @access  Private
 router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => {
-  if (req.body === null) {
-    let err;
-    res.status(err.status || 500);
-    res.render('error');
+  let err = {};
+  if (!req.body[0][0]) {
+    err.empty = 'cannot send empty fields';
+    return res.status(401).json(err.empty).res.send(err.empty);
   } else {
     const errors = {};
     const QUERY_PROFILE = `SELECT * FROM profile WHERE user_id = ${req.user.id}`;
@@ -24,10 +24,7 @@ router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => 
           const result = connection.query(QUERY_PROFILE);
           connection.end();
           return result;
-        },
-        err => connection.end().then(() => {
-          throw err;
-        }),
+        }
       )
       .then(profileBlob => {
         let profileParsed = JSON.parse(JSON.stringify(profileBlob));
