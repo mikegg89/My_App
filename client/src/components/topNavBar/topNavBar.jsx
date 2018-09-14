@@ -24,7 +24,7 @@ class TopNavBar extends Component {
   }
 
   componentDidMount() {
-    fetch('/api/profile/user')
+    fetch('/api/profile')
       .then(res => res.json())
       .then((users) => {
         const user_name = (users[0].user_name[0].toUpperCase() + users[0].user_name.slice(1));

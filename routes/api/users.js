@@ -10,7 +10,6 @@ const passport = require('passport');
 // load input validation
 const validateRegisterInput = require('../../validation/register');
 
-
 // @route   POST api/users/register
 // @desc    Register users
 // @access  Public
@@ -76,7 +75,7 @@ router.post('/login', (req, res) => {
   } else {
     let userName = req.body[0][0];
     let password = req.body[0][1];
-    const CHECK_USER = `select count(*) AS count, password, user_id, avatar, first_name, last_name, user_name from user where user_name = "${userName}"`;
+    const CHECK_USER = `select count(*) AS count, password, id, avatar, first_name, last_name, user_name from user where user_name = "${userName}"`;
     let connection = null;
     mysql
       .createConnection(keys.mysql)
@@ -106,7 +105,7 @@ router.post('/login', (req, res) => {
               // user matched
 
               const payload = {
-                id: user.user_id,
+                id: user.id,
                 first_name: user.first_name,
                 last_name: user.last_name,
                 user_name: user.user_name,
@@ -125,6 +124,7 @@ router.post('/login', (req, res) => {
                     success: true,
                     token: 'Bearer ' + token
                   });
+
                   console.log('Bearer ' + token)
                 });
             } else {
@@ -135,8 +135,6 @@ router.post('/login', (req, res) => {
       .catch((error) => {
         console.error(error);
       });
-
-    // res.send(req.body);
   }
 });
 
