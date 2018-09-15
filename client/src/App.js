@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 import jwt_decode from 'jwt-decode';
 import setAuthToken from './utils/setAuthToken';
-import { setCurrentUser } from './actions/authActions';
+import { setCurrentUser, logoutUser } from './actions/authActions';
 
 import { Provider } from 'react-redux';
 import store from './store';
@@ -23,32 +23,19 @@ if(localStorage.jwtToken) {
   const decoded = jwt_decode(localStorage.jwtToken);
   // set user and isAuthenticated
   store.dispatch(setCurrentUser(decoded));
+
+  // check for expired jwtToken
+  const currentTime = Date.now() / 1000;
+  if(decoded.exp < currentTime) {
+    // logout users
+    store.dispatch(logoutUser());
+    // TODO: clear current profiles
+    // redirect to login
+    window.location.href = '/login';
+  }
 }
 
 class App extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-        user_name: null,
-        first_name: '',
-        last_name: '',
-      };
-  }
-
-  // componentDidMount() {
-  //   fetch('/api/profile/user')
-  //     .then(res => res.json())
-  //     .then(users => {
-  //         if(users.length > 0) {
-  //           const user_name = (users[0].user_name[0].toUpperCase() + users[0].user_name.slice(1));
-  //           const first_name = (users[0].first_name[0].toUpperCase() + users[0].first_name.slice(1));
-  //           const last_name = (users[0].last_name[0].toUpperCase() + users[0].last_name.slice(1));
-  //           this.setState({ user_name, first_name, last_name });
-  //         }
-  //       }
-  //     ).catch((error) => console.error('No user was found'));
-  // }
 
   render() {
     return (
