@@ -1,11 +1,15 @@
 import React, { Component } from 'react';
-import './App.css';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import store from './store';
+
 import NavBar from './components/layout/navBar';
 import Landing from './components/layout/landing';
 import Footer from './components/layout/footer';
 import Register from './components/auth/register';
 import Login from './components/auth/login';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+
+import './App.css';
 
 class App extends Component {
   constructor(props) {
@@ -34,17 +38,19 @@ class App extends Component {
 
   render() {
     return (
-      <Router>
-        <div>
-          <NavBar />
-          <Route exact path="/" component={ Landing } />
-          <div className="container">
-            <Route exact path="/register" component={ Register } />
-            <Route exact path="/login" component={ Login } />
+      <Provider store={ store }>
+        <Router>
+          <div>
+            <NavBar />
+            <Route exact path="/" component={ Landing } />
+            <div className="container">
+              <Route exact path="/register" component={ Register } />
+              <Route exact path="/login" component={ Login } />
+            </div>
+            <Footer />
           </div>
-          <Footer />
-        </div>
-      </Router>
+        </Router>
+      </Provider>
     );
   }
 }
