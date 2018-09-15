@@ -79,7 +79,10 @@ router.post('/register', (req, res) => {
 // @desc    login user
 // @access  Public
 router.post('/login', (req, res) => {
-  const { errors, isValid } = validateRegisterInput(req.body);
+  let requestBody = {};
+  requestBody.user_name = req.body[0][0];
+  requestBody.password = req.body[0][1];
+  const { errors, isValid } = validateLoginInput(requestBody);
 
   // Check Validation
   if (!isValid) {
